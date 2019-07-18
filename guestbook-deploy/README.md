@@ -81,3 +81,4 @@ Result: The guestbook displays in your browser:
     $kubectl get hpa -n production
     NAME           REFERENCE                 TARGETS   MINPODS   MAXPODS   REPLICAS   AGE
     guestbook-v1   Deployment/guestbook-v1   167%/30%    1         10        5          90m
+    ```
