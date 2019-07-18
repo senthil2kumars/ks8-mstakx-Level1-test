@@ -1,0 +1,20 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  creationTimestamp: null
+  labels:
+    run: load-generator
+  name: load-generator
+  namespace: staging
+spec:
+  template:
+    metadata:
+      labels:
+        run: load-generator
+    spec:
+      containers:
+      - image: busybox
+        name: load-generator
+        command: ["/bin/sh"]
+        args: ["-c", "seq 50000 | xargs -Iz wget -q -O- http://guestbook.staging.svc.cluster.local:3000"]
+      restartPolicy: OnFailure

@@ -1,0 +1,46 @@
+- hosts: masternode
+  remote_user: ubuntu
+  become: true
+  become_method: sudo
+  roles:
+    - kube-prerequisite
+    - kube-master
+
+- hosts: masternode
+  remote_user: ubuntu
+  become: true
+  become_method: sudo
+  gather_facts: false
+  tasks:
+    - name: get join command
+      shell: kubeadm token create --print-join-command
+      register: join_token
+    
+    - name: Copy join token to local file
+      local_action: copy content="{{ join_token.stdout_lines[0] }}" dest="/etc/ansible/join-token"
+      
+- hosts: workernode
+  remote_user: ubuntu
+  become: true
+  become_method: sudo
+  roles:
+    - kube-prerequisite
+    - kube-join
+
+- hosts: masternode
+  remote_user: ubuntu
+  become: true
+  become_method: sudo
+  gather_facts: false
+  tasks:
+    - name: print cluster status
+      shell: kubectl get nodes
+      register: output
+    - debug:
+        var: output.stdout_lines      
+- hosts: masternode
+  remote_user: ubuntu
+  become: true
+  become_method: sudo
+  roles:
+    - kube-dashboard

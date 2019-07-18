@@ -1,0 +1,164 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+    role: master
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: redis
+      role: master
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: master
+    spec:
+      containers:
+      - name: redis-master
+        image: redis:3.2.9
+        ports:
+        - name: redis-server
+          containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-master
+  labels:
+    app: redis
+    role: master
+spec:
+  ports:
+  - port: 6379
+    targetPort: redis-server
+  selector:
+    app: redis
+    role: master
+---
+
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis-slave
+  labels:
+    app: redis
+    role: slave
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: redis
+      role: slave
+  template:
+    metadata:
+      labels:
+        app: redis
+        role: slave
+    spec:
+      containers:
+      - name: redis-slave
+        image: ibmcom/guestbook-redis-slave:v2
+        ports:
+        - name: redis-server
+          containerPort: 6379
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-slave
+  labels:
+    app: redis
+    role: slave
+spec:
+  ports:
+  - port: 6379
+    targetPort: redis-server
+  selector:
+    app: redis
+    role: slave
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: guestbook-v1
+  labels:
+    app: guestbook
+    version: "1.0"
+spec:
+  replicas: 3
+  selector:
+    matchLabels:
+      app: guestbook
+  template:
+    metadata:
+      labels:
+        app: guestbook
+        version: "1.0"
+    spec:
+      containers:
+      - name: guestbook
+        image: ibmcom/guestbook:v1
+        ports:
+        - name: http-server
+          containerPort: 3000
+        resources:
+          requests:
+            cpu: 100m
+---
+apiVersion: v1
+data:
+  tls.crt: LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSURIekNDQWdlZ0F3SUJBZ0lKQVAyYWRhNGZhTGZqTUEwR0NTcUdTSWIzRFFFQkN3VUFNQ1l4SkRBaUJnTlYKQkFNTUczTjBZV2RwYm1jdFozVmxjM1JpYjI5ckxtMXpkR0ZyZUM1cGJ6QWVGdzB4T1RBM01EVXdOekF3TlROYQpGdzB5T1RBM01ESXdOekF3TlROYU1DWXhKREFpQmdOVkJBTU1HM04wWVdkcGJtY3RaM1ZsYzNSaWIyOXJMbTF6CmRHRnJlQzVwYnpDQ0FTSXdEUVlKS29aSWh2Y05BUUVCQlFBRGdnRVBBRENDQVFvQ2dnRUJBTGJLSmxBcFFFZ3QKZzA1bXhvcldER3RuV1hRNWdEK3hTcVBqVXRQM0ZWT0taTWFOY3RoUjI5aEZMYkNTWTFGSDhEVGNiRS9oZkV1agp1djVEVXp0akc1S3pZUnFlM01pYm5KTDMwRFdGcEY5eXkxMkJlNVA2K1c5N0tBQUI1V2QrblZoeWZxWmV0cGQwCmlheml2bmtRQmYwd1dwZkhlWDFIMmduOHFyODdYdjIrbHVhUlFoYXpFakJNZGN1NkM1cDZTS29DMVJQNFBKalAKSGRKYTk2WHR0N1VNRkg0cHBsbDY1SThpdGtWMEpQZkpyeG0zREFGMDQ0a3BjaTVqL3ArbVhWQ3ZWK0kvczdLZgpSLy9xMXEvdDFpbXN5bUlQbzBUU0NuTkVRekdVellGQXkwMGlvOFQ3K2gwaEw5dTYzNmt1SHhzZjdJSlZ1UkVTCjMzNzRQVUJSZTVrQ0F3RUFBYU5RTUU0d0hRWURWUjBPQkJZRUZFRG50TnJVcnUya2pzempJb0MvUDlRZElXaGsKTUI4R0ExVWRJd1FZTUJhQUZFRG50TnJVcnUya2pzempJb0MvUDlRZElXaGtNQXdHQTFVZEV3UUZNQU1CQWY4dwpEUVlKS29aSWh2Y05BUUVMQlFBRGdnRUJBQlZuaUwxMzBLMDFyVDNMREdZSkN1aG1JaXV4SjE4QXV6VFQ0eGQ0CmlPbWpEUDdoZWZGYTBDd25SQTRoOXZ0OUNOaGdrOWpxRVk3a1VlcGtSVnhQLzZRaldnKzlxUHB0aEpOVVFGMnQKVk90ekNrNXpCbkU0cUJBK3BkNzJHV1duLzJxa0loUkdXbjZoVmxGSGYwUThITW1JYUx5aVlwVnlRaVg1MElIVQpnOXMxc0tBOTN2aEVYVFg1ZXNrT3ZCKzhqekZURDNGQnlsVTZMY0pYSGcwOWpvMElXU0RXSUlnalhCcGtUYUE1CmZyTGl5L2l0QVJLNFhGWEtHM1pUTDNyWlNDTlpXOXhXWk43cnhyY3h3MWV3YUpUbG8ydndtekhiNzl1K2VubTgKZm50WDNwVmo2Mm1XaytHaVZhdWVYb0t2amRNbktLSXV6MHJFQ0c0N1NUQXJOcnc9Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K
+  tls.key: LS0tLS1CRUdJTiBSU0EgUFJJVkFURSBLRVktLS0tLQpNSUlFcEFJQkFBS0NBUUVBdHNvbVVDbEFTQzJEVG1iR2l0WU1hMmRaZERtQVA3RktvK05TMC9jVlU0cGt4bzF5CjJGSGIyRVV0c0pKalVVZndOTnhzVCtGOFM2TzYva05UTzJNYmtyTmhHcDdjeUp1Y2t2ZlFOWVdrWDNMTFhZRjcKay9yNWIzc29BQUhsWjM2ZFdISitwbDYybDNTSnJPSytlUkFGL1RCYWw4ZDVmVWZhQ2Z5cXZ6dGUvYjZXNXBGQwpGck1TTUV4MXk3b0xtbnBJcWdMVkUvZzhtTThkMGxyM3BlMjN0UXdVZmltbVdYcmtqeUsyUlhRazk4bXZHYmNNCkFYVGppU2x5TG1QK242WmRVSzlYNGorenNwOUgvK3JXciszV0thektZZytqUk5JS2MwUkRNWlROZ1VETFRTS2oKeFB2NkhTRXYyN3JmcVM0Zkd4L3NnbFc1RVJMZmZ2ZzlRRkY3bVFJREFRQUJBb0lCQVFDRmJ3SVM2Rm9ObG5QUQo2c09xbStDTEV2SEJIeXlZMGpJN2V2bCsxRkxVSGlXOHI0c1RrSVljMVRzcU4yS2E5aG5LYk5JQWFna1RLbDJaCnVNbnNnMGVnaXFPckRDYjlwbUxoQWxnU2loRll2L0xtdWx2Y3hZd0tybXVmdmNLYUQxcUxNMkZ5ejVjWTdyQ0YKN1N2QU1rczg3V3hrZWZBYzNUTzBzS1p3WE1YV0Vtd1Z3SHBnR0FHMFdkK2hOKzFMemJORWJvNVJWV1l5NFlrTgpkemJ4SzBpa2syMzUxRVlYaGdhUGhvdXR0UWp0WTQyVTAyRXRPVytmeGZtYjBmVmd3YXU3cVB5U0NBM1RBVStOCkx1NHBLeFg1bGJBZkZUZ1ppRzhtOHRwRkE1OGlvNGpPakN1OHNWSDNkMXJUam9jTzU0R0FoOTVpbjc5QnlWNVYKSmoyU1BkUVJBb0dCQU45NllISDc4VS9tVGN4NnVGQk9uN0tmcFNkTGxoMmh3SXUzN3RDc0IyL3hDNXdKNzRsYgpkR1kyRlljNFdVVFE1WmNxUXlCalZqWXpSOHZOSUQvbm83SVVTM01tTDZNbHdSaUN1S055ZUhXK0szamJTS05GCmkwZzRaVHYycnRneTRrdzFHbktrTTgwREEyY0NBZWg5N0hUaXcxQjhMaDZGNisza0NraVEvOERGQW9HQkFORmoKNzdOVzZySVVLbFk2NUtsenRBVklidzRZMStPNk0yUkcySFNiZG55dGVwV0dZYjVkZ1BEOXlJU1dKYXBRQ2I1agpneHRPOC9jN2czbC9FU1pSR3B5ODlNeUd2ZEIxMTNJUEZiUTBsY3JuQlNTenJuMjgySExGSWIvYVh3RDBPTHROCnRXWVg4ODkvUVViTjNqZGVZS1BZeTVNbm1ueDN2dTlDTjNMZ1U5VEZBb0dBTEVqNDhiMkdiVm5yRXRsQ3l3ODUKa0ZFWWpqZnBVSWZzT3dQQS9ITUtxa0V2RnNYVlJQZnRrZytucG5zaEhZVHo2a2ZDczVsYnpUUE9SM0duc1dJNgp5eUJBYjFvaTJJYXp4Q0tyYWlCV0JLY2h3RHBjSTVhMWFpTmExRTRuQ2NyVGsxeDJtRDgzMEttSE5CTnV3MTZvCnkrVGY1WVFtTTRCQVo0em9DTWRMRnkwQ2dZQlNVQW56b3pCaHp1R1J3bGNQY2dlTHFCellHdFlMbExBTk5IaDAKNW9SZW9NZTJyZndRbkt0S2tVbFpMYmtpeVpIN0FSMlNCNmlLUVIvL0MvK080NFVscG5aSlRKS2p0eDk1bkFwNQpLODdTMDV4SEFFZVE4RUxhWXpwUU5DVHl1QTd4T3F3YnRVRElDZ3Q4TFFPMUdtbTlIMFZ2MUxxN1FVdVN2S0lWCmk3QUl6UUtCZ1FETHFMU3NES3NqQktCMjNaN3MxOTFkSVlNVmpwRUxHcU1MRFpFSlN1S29DMTlkL3JVdVRXUjIKbnJiNEM5UGpvQXVDb2xWQjV2VytWRm52ZFJLOWVESldpWnNteTdScEdkTkNKTUJMYUlVOVlXTWFOR2EzSzNnVQoyeE93elFtaURRU2hWZzh6WDlETG5Ga2lISkpKUlpTR3gwd2tFQkFwWG82NnhmY3VycVdEeVE9PQotLS0tLUVORCBSU0EgUFJJVkFURSBLRVktLS0tLQo=
+kind: Secret
+metadata:
+  creationTimestamp: null
+  name: staging-guestbook
+type: Opaque
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: guestbook
+  labels:
+    app: guestbook
+spec:
+  ports:
+  - port: 3000
+    targetPort: http-server
+  selector:
+    app: guestbook
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: guestbook
+spec:
+  tls:
+  - hosts:
+    - staging-guestbook.mstakx.io
+    secretName: staging-guestbook
+  rules:
+  - host: staging-guestbook.mstakx.io
+    http:
+      paths:
+      - path: /
+        backend:
+          serviceName: guestbook
+          servicePort: 3000
+---
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: guestbook-v1
+spec:
+  maxReplicas: 10
+  minReplicas: 1
+  scaleTargetRef:
+    apiVersion: extensions/v1beta1
+    kind: Deployment
+    name: guestbook-v1
+  targetCPUUtilizationPercentage: 50
