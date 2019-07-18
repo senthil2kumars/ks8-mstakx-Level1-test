@@ -4,7 +4,7 @@ This example shows how to build a simple multi-tier web application using Kubern
 
 ### Prerequisites
 
-This example assumes that you have a working cluster. See the [Getting Started Guides](https://kubernetes.io/docs/setup/) for details about creating a cluster.
+This example assumes that you have a working cluster. See the [Getting Started Guides](https://github.com/senthil2kumars/ks8-mstakx-Level1-test/tree/master/k8s-install) for details about creating a cluster.
 
 **Tip:** View all the `kubectl` commands, including their options and descriptions in the [kubectl CLI reference](https://kubernetes.io/docs/user-guide/kubectl-overview/).
 
